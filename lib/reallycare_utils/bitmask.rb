@@ -28,12 +28,12 @@ module ReallycareUtils
         end
         
         define_method "add_#{@@has_bitmask_field}" do |bitmask_const, save_it=false|
-          self[@@has_bitmask_field] = self[@@has_bitmask_field] | self.class.bitmask_value(bitmask_const)
+          self[@@has_bitmask_field] = (self[@@has_bitmask_field] || 0) | self.class.bitmask_value(bitmask_const)
           self.save! if save_it
         end
         
         define_method "remove_#{@@has_bitmask_field}" do |bitmask_const, save_it=false|
-          self[@@has_bitmask_field] = self[@@has_bitmask_field] & ~(self.class.bitmask_value(bitmask_const))
+          self[@@has_bitmask_field] = (self[@@has_bitmask_field] || 0) & ~(self.class.bitmask_value(bitmask_const))
           self.save! if save_it
         end
           
