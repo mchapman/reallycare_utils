@@ -2,6 +2,8 @@ h1. ReallyCare_utils
 
 Functions that are used (or likely to be used) by more than one ReallyCare CIC product
 
+WARNING: Many breaking changes in 0.0.5
+
 h2. Bitmask
 
 A module to make handling bit masks easy.
