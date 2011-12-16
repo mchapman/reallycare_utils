@@ -1,48 +1,42 @@
 module ReallycareUtils
   module Bitmask
     module ClassMethods
-      def has_bitmask(field, statuses)
-        @@has_bitmask_field = field
-        @@has_bitmask_values = statuses
-        
-        define_bitmask_methods
-      end
-      
-      def bitmask_value(status_const)
-        return 2**@@has_bitmask_values.index(status_const.to_sym)
-      end
-      
-      def define_bitmask_methods
-        define_method "has_#{@@has_bitmask_field}?" do |bitmask_const|
-          if self[@@has_bitmask_field]
-            if bitmask_const.instance_of? Fixnum
-              this_bit = bitmask_const
-            else
-              this_bit = self.class.bitmask_value(bitmask_const)
+      def has_bitmasks(types)
+        types.each do |attribute, values|
+          values.each_with_index do |value_name, i|
+            
+            define_method("add_#{attribute}_#{value_name}".to_sym) do |save_it=false|
+              self["#{attribute}"] = (self["#{attribute}"] || 0) | (2 ** i)
+              self.save! if save_it
             end
-            has_it = (self[@@has_bitmask_field] & this_bit > 0)
-          else
-            has_it = false
+            
+            define_method("remove_#{attribute}_#{value_name}".to_sym) do |save_it=false|
+              self["#{attribute}"] = (self["#{attribute}"] || 0) & ~(2 ** i)
+              self.save! if save_it
+            end
+            
+            define_method("has_#{attribute}_#{value_name}?".to_sym) do
+              self["#{attribute}"][i] != 0
+            end
           end
-          has_it
+
+          define_method("show_#{attribute}_flags".to_sym) do
+            val = self["#{attribute}"]
+            potential_values.map.with_index { |value_name, i| value_name if val[i] == 1 }.compact
+          end
+
+          define_method("#{attribute}_includes_one_of?".to_sym) do |mask|
+            (self["#{attribute}"] | mask) != 0
+          end
+
         end
-        
-        define_method "add_#{@@has_bitmask_field}" do |bitmask_const, save_it=false|
-          self[@@has_bitmask_field] = (self[@@has_bitmask_field] || 0) | self.class.bitmask_value(bitmask_const)
-          self.save! if save_it
-        end
-        
-        define_method "remove_#{@@has_bitmask_field}" do |bitmask_const, save_it=false|
-          self[@@has_bitmask_field] = (self[@@has_bitmask_field] || 0) & ~(self.class.bitmask_value(bitmask_const))
-          self.save! if save_it
-        end
-          
       end
     end
     
     def self.included(receiver)
-      receiver.extend         ClassMethods
-      # receiver.send :include, InstanceMethods
+      receiver.extend ClassMethods
     end
   end
 end
+
+
