@@ -16,19 +16,14 @@ module ReallycareUtils
             end
             
             define_method("has_#{attribute}_#{value_name}?".to_sym) do
-              self["#{attribute}"][i] != 0
+              (self["#{attribute}"][i] || 0) != 0
             end
           end
 
           define_method("show_#{attribute}_flags".to_sym) do
-            val = self["#{attribute}"]
-            potential_values.map.with_index { |value_name, i| value_name if val[i] == 1 }.compact
+            val = self["#{attribute}"] || 0
+            values.map.with_index { |value_name, i| value_name if val[i] == 1 }.compact
           end
-
-          define_method("#{attribute}_includes_one_of?".to_sym) do |mask|
-            (self["#{attribute}"] | mask) != 0
-          end
-
         end
       end
     end
